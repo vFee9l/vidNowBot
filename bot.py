@@ -32,6 +32,7 @@ def handle_message(client, message):
         file_path = download_video(url)
         message.reply_text("✅ تم التحميل! ...")
         message.reply_video(file_path)
+        message.reply_text("أستمتع يا وحش 🔥")
         os.remove(file_path)
     except Exception as e:
         message.reply_text(f"❌ خطاء في التحميل: {e}")
