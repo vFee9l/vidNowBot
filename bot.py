@@ -24,17 +24,17 @@ def handle_message(client, message):
     platform = next((p for k, p in platforms.items() if k in url), None)
 
     if not platform:
-        return message.reply_text("❌ Unsupported link.")
+        return message.reply_text("❌ الرابط لا يدعم.")
 
-    message.reply_text(f"🔄 Downloading from {platform}...")
+    message.reply_text(f"🔄 جاري التحميل {platform}...")
 
     try:
         file_path = download_video(url)
-        message.reply_text("✅ Download complete! Uploading...")
+        message.reply_text("✅ تم التحميل! ...")
         message.reply_video(file_path)
         os.remove(file_path)
     except Exception as e:
-        message.reply_text(f"❌ Download failed: {e}")
+        message.reply_text(f"❌ خطاء في التحميل: {e}")
 
 # Run bot
 app.run()
