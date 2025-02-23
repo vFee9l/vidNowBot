@@ -1,58 +1,40 @@
+import os
 from pyrogram import Client, filters
 import yt_dlp
-import os
 
-# Replace with your API credentials
-api_id = 20534294  # Your API ID
-api_hash = "8099087ad1f0ee68c3f391a04032a2b0"  # Your API Hash
-bot_token = "7841644976:AAEY6Tqc4meRKSnbsGwbkKRgd6Y8z5yFFEA"  # Your Bot Token
+# Get API credentials from environment variables
+api_id = int(os.getenv("API_ID"))
+api_hash = os.getenv("API_HASH")
+bot_token = os.getenv("BOT_TOKEN")
 
-# Initialize the bot
+# Initialize bot
 app = Client("video_downloader_bot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
 
 # Function to download video
 def download_video(url):
-    output_path = "downloads/%(title)s.%(ext)s"
-    options = {
-        'format': 'best',
-        'outtmpl': output_path,
-        'quiet': True
-    }
+    options = {'format': 'best', 'outtmpl': 'downloads/%(title)s.%(ext)s', 'quiet': True}
     with yt_dlp.YoutubeDL(options) as ydl:
         info = ydl.extract_info(url, download=True)
         return ydl.prepare_filename(info)
 
-# Handle messages
 @app.on_message(filters.private & filters.text)
 def handle_message(client, message):
     url = message.text
+    platforms = {"youtube.com": "YouTube", "tiktok.com": "TikTok", "instagram.com": "Instagram", "twitter.com": "Twitter"}
+    platform = next((p for k, p in platforms.items() if k in url), None)
 
-    # Identify platform
-    if "youtube.com" in url or "youtu.be" in url:
-        platform = "YouTube"
-    elif "tiktok.com" in url:
-        platform = "TikTok"
-    elif "instagram.com" in url:
-        platform = "Instagram"
-    elif "twitter.com" in url or "x.com" in url:
-        platform = "Twitter"
-    else:
-        message.reply_text("❌ الرابط لا يدعم")
-        return
+    if not platform:
+        return message.reply_text("❌ Unsupported link.")
 
-    message.reply_text(f"🔄 جاري تنزيل الفيديو {platform}...")
+    message.reply_text(f"🔄 Downloading from {platform}...")
 
     try:
         file_path = download_video(url)
-        message.reply_text("✅ تم التنزيل!...")
-
-        # Send the video
+        message.reply_text("✅ Download complete! Uploading...")
         message.reply_video(file_path)
-
-        # Delete the video after sending
         os.remove(file_path)
     except Exception as e:
-        message.reply_text(f"❌ في مشكلة \nError: {str(e)}")
+        message.reply_text(f"❌ Download failed: {e}")
 
-# Run the bot
+# Run bot
 app.run()
